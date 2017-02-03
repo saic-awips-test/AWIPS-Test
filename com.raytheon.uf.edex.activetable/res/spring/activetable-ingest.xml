@@ -1,0 +1,40 @@
+<beans
+  xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd   
+  http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+	<camelContext id="clusteredActiveTableContext"
+		xmlns="http://camel.apache.org/schema/spring"
+		errorHandlerRef="errorHandler">
+
+		<route id="activeTablePendingRoute">
+			<from uri="jms-durable:queue:activeTablePending"/>
+            <doTry>
+    			<bean ref="activeTableSrv" method="vtecArrived" />					
+                <doCatch>
+                    <exception>java.lang.Throwable</exception>
+                    <to uri="log:activeTable?level=ERROR"/>
+                </doCatch>
+            </doTry>
+		</route>
+		
+		<route id="practiceNotifyRoute">
+			<from uri="jms-generic:queue:practiceNotify" />
+            <doTry>
+            	<multicast parallelProcessing="false">
+					<to uri="jms-durable:queue:edex.spcWatch" />
+					<to uri="jms-durable:queue:edex.tpcWatch" />
+            	</multicast>
+                <doCatch>
+                    <exception>java.lang.Throwable</exception>
+                    <to uri="log:practiceActiveTable?level=ERROR"/>
+                </doCatch>
+            </doTry>
+		</route>
+
+	</camelContext>
+		
+	<bean factory-bean="contextManager" factory-method="registerClusteredContext">
+		<constructor-arg ref="clusteredActiveTableContext" />
+  	</bean>
+</beans>

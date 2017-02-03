@@ -1,0 +1,130 @@
+###############################################################################
+## FIRE WARNING TEMPLATE                                                     ##
+## VERSION 1.1                                                               ##
+## CREATED BOOKBINDER/DANGELO - 2-07-12 - Initial OB12 Write                 ##
+##           Mike Dangelo 9-13-2012 minor tweaks to ${variables}             ##
+##           Mike Dangelo 6-25-2014 turned off auto-lock in xml and added specific lock tags herein to facilitate editing the agency name in the MND header. ## 
+###############################################################################
+#parse("config.vm")
+${WMOId} ${vtecOffice} 000000 ${BBBId}
+FRW${siteId}
+<L>${ugcline}</L>
+
+<L>BULLETIN - EAS ACTIVATION REQUESTED</L>
+#if(${productClass}=="T")
+<L>TEST...FIRE WARNING...TEST</L>
+#else
+<L>FIRE WARNING</L>
+#end
+#set($requestedBy = "!** ENTER REQUESTING AGENCY NAME HERE **!")
+#if(${list.contains(${bullets}, "agency1")})
+#set($requestedBy = "EXAMPLE AGENCY 1")
+#end
+#if(${list.contains(${bullets}, "agency2")})
+#set($requestedBy = "EXAMPLE AGENCY 2")
+#end
+REQUESTED BY ${requestedBy}
+<L>RELAYED BY NATIONAL WEATHER SERVICE ${officeShort}</L>
+#backupText(${backupSite})
+<L>${dateUtil.format(${now}, ${timeFormat.header}, ${localtimezone})}</L>
+
+#if(${productClass}=="T")
+...THIS MESSAGE IS FOR TEST PURPOSES ONLY...
+
+#end
+
+THE FOLLOWING MESSAGE IS BEING TRANSMITTED AT THE REQUEST OF 
+$requestedBy
+
+############################
+### FIRE WEATHER EMERGENCY #
+############################
+#if(${list.contains(${bullets}, "fireEmergency")})
+THIS IS A FIRE EMERGENCY FOR !** EDIT LOCATION(S) **!...TAKE IMMEDIATE SAFETY PRECAUTIONS NOW.
+
+#end
+#if(${list.contains(${bullets}, "generic")})
+
+!** TYPE FIRE DETAILS HERE **!.
+
+
+
+#end
+
+#if(${list.contains(${bullets}, "actual")})
+
+A FIRE WAS LOCATED !** DETAILS **! AND COULD AFFECT !** AREAS **!.
+
+
+
+#end
+
+#if(${list.contains(${bullets}, "racing")})
+
+A FIRE WAS RACING TOWARD !** LOCATIONS **! AND COULD REACH THERE BY !** TIME **!.
+
+
+
+#end
+
+## parse file command here is to pull in mile marker info
+## #parse("mileMarkers.vm")
+## #parse("pointMarkers.vm")
+
+#####################
+## CALL TO ACTIONS ##
+#####################
+###Check to see if we've selected any calls to action. In our .xml file
+##we ended each CTA bullet ID with "CTA" for this reason as a 'trip'
+#foreach (${bullet} in ${bullets})
+#if(${bullet.endsWith("CTA")})
+#set($ctaSelected = "YES")
+#end
+#end
+##
+#if(${ctaSelected} == "YES") 
+<L>PRECAUTIONARY/PREPAREDNESS ACTIONS...</L>
+
+#end
+#if(${productClass}=="T")
+THIS IS A TEST MESSAGE. DO NOT TAKE ACTION BASED ON THIS MESSAGE.
+
+#end
+##
+#if(${list.contains(${bullets}, "stayIndoorsCTA")})
+
+STAY INDOORS TO KEEP SAFE FROM THE SMOKE. KEEP WINDOWS AND DOORS SHUT AND TURN OFF ALL VENTILATION SYSTEMS. 
+
+
+
+#end
+
+#if(${list.contains(${bullets}, "followInstructionsCTA")})
+
+FOLLOW SAFETY INSTRUCTIONS FROM LOCAL LAW ENFORCEMENT OFFICIALS. 
+
+
+
+#end
+
+#if(${list.contains(${bullets}, "heedEvacuationsCTA")})
+
+HEED ANY EVACUATION ORDERS AND FOLLOW ALL SAFETY PRECAUTIONS.
+
+
+
+#end
+#if(${ctaSelected} == "YES") 
+<L>&&</L>
+#end
+
+#### UN-REMARK 3 LINES BELOW FOR LAT/LON OUTPUT 
+####    (leave double pound signs after the first lock tag and after the #printcoords call 
+####     to allow for text wrapping and locking to work properly)
+## <L>##
+## #printcoords(${areaPoly}, ${list}) ##
+## </L>
+
+<L>$$</L>
+
+#parse("forecasterName.vm")
